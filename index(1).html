@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JAC Antwerpen — Roostertool</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg:#f5f5f3;--bg2:#fff;--bg3:#f0efe9;--bg4:#e8e7e0;
+  --text:#1a1a1a;--text2:#666;--text3:#aaa;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-bd:#B5D4F4;--blue-txt:#0C447C;
+  --green-bg:#EAF3DE;--green-txt:#3B6D11;--green-bd:#C0DD97;
+  --amber-bg:#FAEEDA;--amber-txt:#854F0B;--amber-bd:#FAC775;
+  --red-bg:#FCEBEB;--red-txt:#A32D2D;--red-bd:#F7C1C1;
+  --teal-bg:#E1F5EE;--teal-txt:#0F6E56;--teal-bd:#9FE1CB;
+  --gray-bg:#F1EFE8;--gray-txt:#5F5E5A;--gray-bd:#D3D1C7;
+  --r:8px;--rl:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--bg2:#242422;--bg3:#2e2e2b;--bg4:#383835;
+  --text:#e8e6df;--text2:#a8a69e;--text3:#555;
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
+  --blue:#6aabf7;--blue-bg:#0c2d4a;--blue-bd:#1a4a7a;--blue-txt:#a8cff7;
+  --green-bg:#0f2a0a;--green-txt:#a8d98a;--green-bd:#2a5a1a;
+  --amber-bg:#2a1a05;--amber-txt:#f5c060;--amber-bd:#5a3a10;
+  --red-bg:#2a0a0a;--red-txt:#f59090;--red-bd:#5a1a1a;
+  --teal-bg:#05221a;--teal-txt:#70d4b0;--teal-bd:#0a4a35;
+  --gray-bg:#2a2a28;--gray-txt:#a8a69e;--gray-bd:#3a3a38;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:inherit;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:var(--text);background:var(--bg2)}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.25rem;display:flex;align-items:center;gap:10px;height:50px;position:sticky;top:0;z-index:50}
+.topbar-logo{font-size:15px;font-weight:700;color:var(--blue)}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.layout{display:flex;flex:1}
+.sidebar{width:215px;background:var(--bg2);border-right:1px solid var(--border);padding:.75rem 0;flex-shrink:0;position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto}
+.nav-sec{padding:.75rem .75rem .25rem;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px .75rem;border-radius:var(--r);margin:1px 6px;cursor:pointer;font-size:13px;color:var(--text2);transition:background .1s}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.nav-item i{font-size:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:var(--red-bg);color:var(--red-txt);padding:1px 6px;border-radius:10px}
+.main{flex:1;overflow-x:hidden}
+.page{padding:1.25rem;max-width:1200px}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px}
+.pt{font-size:17px;font-weight:700}
+.ps{font-size:12px;color:var(--text2);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);font-size:13px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);cursor:pointer;transition:background .1s;white-space:nowrap}
+.btn:hover{background:var(--bg3)}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:var(--blue-txt);border-color:var(--blue-txt)}
+.btn-sm{padding:4px 9px;font-size:12px}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border-color:var(--red-bd)}
+.btn-danger:hover{background:var(--red-bd)}
+.btn-success{background:var(--green-bg);color:var(--green-txt);border-color:var(--green-bd)}
+.bg{display:flex;gap:6px;flex-wrap:wrap}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:1rem 1.25rem}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem}
+.sc{background:var(--bg3);border-radius:var(--r);padding:.875rem}
+.sl{font-size:11px;color:var(--text2);margin-bottom:4px}
+.sv{font-size:22px;font-weight:700}
+.ss{font-size:11px;color:var(--text3);margin-top:2px}
+.week-nav{display:flex;align-items:center;gap:8px}
+.wl{font-size:13px;font-weight:600;min-width:200px;text-align:center}
+.rwrap{overflow-x:auto}
+.rgrid{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);min-width:720px}
+.rhead{display:grid;border-bottom:1px solid var(--border);background:var(--bg3)}
+.rhc{padding:9px 10px;font-size:11px;font-weight:700;color:var(--text2);border-right:1px solid var(--border)}
+.rhc:last-child{border-right:none}
+.rhc .dt{font-size:10px;font-weight:400;color:var(--text3);margin-top:1px}
+.rrow{display:grid;border-bottom:1px solid var(--border)}
+.rrow:last-child{border-bottom:none}
+.rname{padding:8px 10px;border-right:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.rcell{padding:5px 7px;border-right:1px solid var(--border);min-height:60px;display:flex;flex-direction:column;gap:3px}
+.rcell:last-child{border-right:none}
+.rcell.vl{background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(250,200,80,.06) 5px,rgba(250,200,80,.06) 10px)}
+.rcell.zk{background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(220,80,80,.06) 5px,rgba(220,80,80,.06) 10px)}
+.rcell.unavail{background:var(--bg3);opacity:.6}
+.stag{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;border:1px solid transparent;max-width:100%}
+.stag:hover{opacity:.75}
+.addbtn{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:2px;cursor:pointer;padding:1px 3px;border-radius:3px;margin-top:auto}
+.addbtn:hover{background:var(--bg3);color:var(--text2)}
+.abadge{font-size:10px;padding:2px 5px;border-radius:3px}
+.unavail-dot{font-size:10px;color:var(--text3);font-style:italic}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--text2);padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:20px;border:1px solid;white-space:nowrap}
+.cb{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+.cg{background:var(--green-bg);color:var(--green-txt);border-color:var(--green-bd)}
+.ca{background:var(--amber-bg);color:var(--amber-txt);border-color:var(--amber-bd)}
+.cr{background:var(--red-bg);color:var(--red-txt);border-color:var(--red-bd)}
+.ct{background:var(--teal-bg);color:var(--teal-txt);border-color:var(--teal-bd)}
+.cgr{background:var(--gray-bg);color:var(--gray-txt);border-color:var(--gray-bd)}
+.av{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.modal{background:var(--bg2);border-radius:var(--rl);padding:1.5rem;width:480px;max-width:100%;border:1px solid var(--border);max-height:90vh;overflow-y:auto}
+.mt{font-size:15px;font-weight:700;margin-bottom:1.25rem}
+.fg{margin-bottom:.875rem}
+.fl{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.4px}
+.fc{width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;background:var(--bg2);color:var(--text)}
+.fc:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.15)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
+.alert{padding:10px 14px;border-radius:var(--r);font-size:13px;display:flex;gap:8px;align-items:flex-start;margin-bottom:1rem}
+.aw{background:var(--amber-bg);color:var(--amber-txt);border:1px solid var(--amber-bd)}
+.ai{background:var(--blue-bg);color:var(--blue-txt);border:1px solid var(--blue-bd)}
+.as{background:var(--green-bg);color:var(--green-txt);border:1px solid var(--green-bd)}
+.pb{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;width:70px;display:inline-block}
+.pf{height:100%;border-radius:2px}
+.avail-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+.avail-cell{border:1px solid var(--border);border-radius:var(--r);padding:6px 4px;font-size:11px;text-align:center;cursor:pointer;user-select:none;transition:background .1s}
+.avail-cell.on{background:var(--green-bg);color:var(--green-txt);border-color:var(--green-bd);font-weight:600}
+.avail-cell.off{background:var(--bg3);color:var(--text3)}
+.uren-bar{height:8px;border-radius:4px;margin-top:4px;transition:width .3s}
+.section-hdr{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem;margin-top:1.25rem}
+.section-hdr:first-child{margin-top:0}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.prog-label{font-size:13px;min-width:160px}
+.prog-track{flex:1;height:10px;background:var(--bg3);border-radius:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:5px;transition:width .3s}
+.prog-pct{font-size:12px;font-weight:600;min-width:40px;text-align:right}
+@media print{
+  .sidebar,.topbar,.btn,.addbtn,.stag i,.nav-item,.ov{display:none!important}
+  .main{width:100%}
+  .page{padding:.5rem}
+  .rgrid{min-width:unset}
+  body{font-size:11px}
+  .pt{font-size:14px}
+}
+@media(max-width:700px){.sidebar{display:none}.page{padding:.875rem}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useMemo,useEffect,useCallback}=React;
+const SK='jac_rooster_v2';
+const ROLLEN=[
+  {id:'hulpverlener',label:'Hulpverlener',chip:'cb'},
+  {id:'coordinator',label:'Coördinator',chip:'ct'},
+  {id:'admin',label:'Administratie',chip:'cgr'},
+  {id:'vrijwilliger',label:'Vrijwilliger',chip:'cg'},
+  {id:'stagiair',label:'Stagiair',chip:'ca'},
+];
+const ARBEIDSBREUKEN=['Voltijds (100%)','Deeltijds 80%','Deeltijds 60%','Deeltijds 50%','Deeltijds 40%','Vrijwilliger'];
+const ARBEID_PCT={'Voltijds (100%)':100,'Deeltijds 80%':80,'Deeltijds 60%':60,'Deeltijds 50%':50,'Deeltijds 40%':40,'Vrijwilliger':0};
+const VERLOF_TYPES=['Verlof','Ziekte','Tijdskrediet','Opleiding','Andere'];
+const DK=['ma','di','wo','do','vr'];
+const DL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+const AVC=[
+  {bg:'#dbeafe',fg:'#1e40af'},{bg:'#d1fae5',fg:'#065f46'},
+  {bg:'#fef3c7',fg:'#92400e'},{bg:'#fce7f3',fg:'#9d174d'},
+  {bg:'#ede9fe',fg:'#5b21b6'},{bg:'#dcfce7',fg:'#166534'},
+  {bg:'#fee2e2',fg:'#991b1b'},{bg:'#e0f2fe',fg:'#0369a1'},
+];
+const IT=[
+  {id:'t1',label:'Onthaal ma-avond',start:'15:00',end:'19:00',dagen:['ma'],min:2,bg:'#dbeafe',fg:'#1e40af'},
+  {id:'t2',label:'Onthaal wo-middag',start:'13:00',end:'17:00',dagen:['wo'],min:2,bg:'#dcfce7',fg:'#166534'},
+  {id:'t3',label:'Telefoonpermanentie',start:'13:00',end:'17:00',dagen:['ma','di','wo','do'],min:1,bg:'#fef3c7',fg:'#92400e'},
+  {id:'t4',label:'Telefoon vrijdag',start:'10:00',end:'12:30',dagen:['vr'],min:1,bg:'#fef3c7',fg:'#92400e'},
+  {id:'t5',label:'Consultatie',start:'09:00',end:'17:00',dagen:['di','do','vr'],min:1,bg:'#d1fae5',fg:'#065f46'},
+  {id:'t6',label:'Administratie',start:'09:00',end:'12:00',dagen:['ma','di','wo','do','vr'],min:0,bg:'#f1efe8',fg:'#5f5e5a'},
+];
+const IM=[
+  {id:1,naam:'An Declercq',rol:'coordinator',arbeid:'Voltijds (100%)',email:'an@jac.be',actief:true,beschikbaar:['ma','di','wo','do','vr'],uren_week:38},
+  {id:2,naam:'Bram Peeters',rol:'hulpverlener',arbeid:'Deeltijds 80%',email:'bram@jac.be',actief:true,beschikbaar:['ma','di','wo','do'],uren_week:30},
+  {id:3,naam:'Fatima El Hadi',rol:'hulpverlener',arbeid:'Voltijds (100%)',email:'fatima@jac.be',actief:true,beschikbaar:['ma','di','wo','do','vr'],uren_week:38},
+  {id:4,naam:'Jonas Vermeersch',rol:'hulpverlener',arbeid:'Deeltijds 60%',email:'jonas@jac.be',actief:true,beschikbaar:['di','wo','do'],uren_week:23},
+  {id:5,naam:'Lotte Vandenberghe',rol:'admin',arbeid:'Deeltijds 50%',email:'lotte@jac.be',actief:true,beschikbaar:['ma','di','wo'],uren_week:19},
+  {id:6,naam:'Mehmet Yilmaz',rol:'hulpverlener',arbeid:'Voltijds (100%)',email:'mehmet@jac.be',actief:true,beschikbaar:['ma','di','wo','do','vr'],uren_week:38},
+  {id:7,naam:'Sara De Wolf',rol:'stagiair',arbeid:'Vrijwilliger',email:'sara@jac.be',actief:true,beschikbaar:['wo','do'],uren_week:0},
+];
+const IS={'1-ma':[{taakId:'t3'}],'2-ma':[{taakId:'t1'}],'3-ma':[{taakId:'t1'}],'4-di':[{taakId:'t5'}],'5-di':[{taakId:'t6'}],'6-wo':[{taakId:'t2'}],'3-wo':[{taakId:'t2'}],'2-do':[{taakId:'t5'}],'7-do':[{taakId:'t5'}],'1-vr':[{taakId:'t4'}]};
+const IV=[{id:1,medeId:4,type:'Verlof',van:'2025-06-09',tot:'2025-06-13',opmerking:''},{id:2,medeId:7,type:'Ziekte',van:'2025-06-10',tot:'2025-06-10',opmerking:'Doktersbriefje bezorgd'}];
+
+function ini(n){return n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();}
+function avc(i){return AVC[i%AVC.length];}
+function gwd(off=0){
+  const n=new Date(),day=n.getDay(),diff=n.getDate()-day+(day===0?-6:1)+off*7;
+  const m=new Date(n);m.setDate(diff);
+  return Array.from({length:5},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d;});
+}
+function fd(d){return d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});}
+function timeToMin(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function taskDur(t){return Math.max(0,(timeToMin(t.end)-timeToMin(t.start))/60);}
+function load(){try{const s=localStorage.getItem(SK);return s?JSON.parse(s):null;}catch(e){return null;}}
+function save(d){try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){}}
+
+function App(){
+  const sv=load();
+  const [pagina,setPagina]=useState('rooster');
+  const [medes,setMedes]=useState(sv?.medes||IM);
+  const [taken,setTaken]=useState(sv?.taken||IT);
+  const [shifts,setShifts]=useState(sv?.shifts||IS);
+  const [verloven,setVerloven]=useState(sv?.verloven||IV);
+  const [wo,setWo]=useState(0);
+  const [modal,setModal]=useState(null);
+
+  useEffect(()=>{save({medes,taken,shifts,verloven});},[medes,taken,shifts,verloven]);
+
+  const wd=useMemo(()=>gwd(wo),[wo]);
+  const wl=`${fd(wd[0])} – ${fd(wd[4])} ${wd[0].getFullYear()}`;
+  const actief=medes.filter(m=>m.actief);
+
+  function addShift(medeId,dag,taakId){
+    const k=`${medeId}-${dag}`;
+    setShifts(p=>({...p,[k]:[...(p[k]||[]),{taakId}]}));
+  }
+  function remShift(medeId,dag,idx){
+    const k=`${medeId}-${dag}`;
+    setShifts(p=>({...p,[k]:(p[k]||[]).filter((_,i)=>i!==idx)}));
+  }
+
+  const alerts=useMemo(()=>{
+    const res=[];
+    taken.forEach(t=>{
+      if(t.min===0)return;
+      t.dagen.forEach(dag=>{
+        const cnt=actief.filter(m=>(shifts[`${m.id}-${dag}`]||[]).some(s=>s.taakId===t.id)).length;
+        if(cnt<t.min)res.push({taak:t.label,dag:DL[DK.indexOf(dag)],cnt,min:t.min});
+      });
+    });
+    return res;
+  },[taken,actief,shifts]);
+
+  // Bereken geplande uren per medewerker deze week
+  function geplandUren(medeId){
+    return DK.reduce((tot,dag)=>{
+      const ks=shifts[`${medeId}-${dag}`]||[];
+      return tot+ks.reduce((s,sh)=>{
+        const t=taken.find(x=>x.id===sh.taakId);
+        return s+(t?taskDur(t):0);
+      },0);
+    },0);
+  }
+
+  // Auto-rooster generator
+  function autoRooster(){
+    const nieuw={...shifts};
+    taken.forEach(taak=>{
+      taak.dagen.forEach(dag=>{
+        // Tel bestaande bezetting
+        const huidig=actief.filter(m=>(nieuw[`${m.id}-${dag}`]||[]).some(s=>s.taakId===taak.id)).length;
+        if(huidig>=taak.min)return;
+        const tekort=taak.min-huidig;
+        // Geschikte kandidaten: beschikbaar, niet op verlof, rol hulpverlener/coordinator, nog niet ingepland
+        const kandidaten=actief.filter(m=>{
+          if(!(m.beschikbaar||[]).includes(dag))return false;
+          if(verloven.some(v=>v.medeId===m.id))return false;
+          if((nieuw[`${m.id}-${dag}`]||[]).some(s=>s.taakId===taak.id))return false;
+          return m.rol==='hulpverlener'||m.rol==='coordinator';
+        });
+        // Sorteer op minste geplande uren
+        kandidaten.sort((a,b)=>geplandUren(a.id)-geplandUren(b.id));
+        kandidaten.slice(0,tekort).forEach(m=>{
+          const k=`${m.id}-${dag}`;
+          nieuw[k]=[...(nieuw[k]||[]),{taakId:taak.id}];
+        });
+      });
+    });
+    setShifts(nieuw);
+  }
+
+  const PAGES=[
+    {id:'rooster',icon:'ti-calendar',label:'Weekrooster'},
+    {id:'taken',icon:'ti-list-check',label:'Taken & shifts'},
+    {id:'waarschuw',icon:'ti-alert-triangle',label:'Waarschuwingen',badge:alerts.length||null},
+    {id:'medes',icon:'ti-users',label:'Medewerkers'},
+    {id:'beschikbaar',icon:'ti-clock',label:'Beschikbaarheid'},
+    {id:'uren',icon:'ti-chart-bar',label:'Uren overzicht'},
+    {id:'verlof',icon:'ti-beach',label:'Verlof & afwezigheid'},
+    {id:'locaties',icon:'ti-building',label:'Locaties'},
+  ];
+
+  return(
+    <div className="app">
+      <div className="topbar">
+        <span className="topbar-logo">JAC Antwerpen</span>
+        <span style={{color:'var(--border2)'}}>|</span>
+        <span style={{fontSize:13,color:'var(--text2)'}}>Roostertool</span>
+        <div className="topbar-right">
+          <span className="chip cb" style={{fontSize:11}}>Antwerpen</span>
+          {alerts.length>0&&<span className="chip cr" style={{fontSize:11}}><i className="ti ti-alert-triangle" style={{fontSize:11}}></i> {alerts.length} waarschuwing{alerts.length>1?'en':''}</span>}
+          <button className="btn btn-sm" onClick={()=>window.print()} title="Afdrukken"><i className="ti ti-printer"></i> Afdrukken</button>
+        </div>
+      </div>
+      <div className="layout">
+        <nav className="sidebar">
+          <div className="nav-sec">Plannen</div>
+          {PAGES.slice(0,3).map(p=>(
+            <div key={p.id} className={`nav-item${pagina===p.id?' active':''}`} onClick={()=>setPagina(p.id)}>
+              <i className={`ti ${p.icon}`}></i>{p.label}
+              {p.badge?<span className="nav-badge">{p.badge}</span>:null}
+            </div>
+          ))}
+          <div className="nav-sec">Medewerkers</div>
+          {PAGES.slice(3,7).map(p=>(
+            <div key={p.id} className={`nav-item${pagina===p.id?' active':''}`} onClick={()=>setPagina(p.id)}>
+              <i className={`ti ${p.icon}`}></i>{p.label}
+            </div>
+          ))}
+          <div className="nav-sec">Instellingen</div>
+          {PAGES.slice(7).map(p=>(
+            <div key={p.id} className={`nav-item${pagina===p.id?' active':''}`} onClick={()=>setPagina(p.id)}>
+              <i className={`ti ${p.icon}`}></i>{p.label}
+            </div>
+          ))}
+        </nav>
+        <main className="main">
+
+          {/* ── ROOSTER ── */}
+          {pagina==='rooster'&&(
+            <div className="page">
+              <div className="ph">
+                <div><div className="pt">Weekrooster</div><div className="ps">{actief.length} medewerkers</div></div>
+                <div className="bg">
+                  <div className="week-nav">
+                    <button className="btn btn-sm" onClick={()=>setWo(w=>w-1)}><i className="ti ti-chevron-left"></i></button>
+                    <span className="wl">{wl}</span>
+                    <button className="btn btn-sm" onClick={()=>setWo(w=>w+1)}><i className="ti ti-chevron-right"></i></button>
+                    <button className="btn btn-sm" onClick={()=>setWo(0)}>Deze week</button>
+                  </div>
+                  <button className="btn btn-success btn-sm" onClick={autoRooster} title="Vul ontbrekende bezetting automatisch aan op basis van beschikbaarheid"><i className="ti ti-wand"></i> Auto-rooster</button>
+                  <button className="btn btn-primary btn-sm" onClick={()=>setModal({type:'addShift'})}><i className="ti ti-plus"></i> Shift</button>
+                </div>
+              </div>
+              {alerts.length>0&&(
+                <div className="alert aw">
+                  <i className="ti ti-alert-triangle" style={{fontSize:15,marginTop:1}}></i>
+                  <div>Minimum niet gehaald voor <strong>{alerts.length}</strong> taak{alerts.length>1?'en':''}. <span style={{cursor:'pointer',textDecoration:'underline'}} onClick={()=>setPagina('waarschuw')}>Bekijk →</span> Of gebruik <strong>Auto-rooster</strong> om automatisch aan te vullen.</div>
+                </div>
+              )}
+              <div className="rwrap">
+                <div className="rgrid">
+                  <div className="rhead" style={{gridTemplateColumns:'160px repeat(5,1fr)'}}>
+                    <div className="rhc">Medewerker</div>
+                    {DL.map((d,i)=><div key={d} className="rhc">{d}<div className="dt">{fd(wd[i])}</div></div>)}
+                  </div>
+                  {actief.map((m,idx)=>{
+                    const rol=ROLLEN.find(r=>r.id===m.rol);
+                    const clr=avc(idx);
+                    const vl=verloven.some(v=>v.medeId===m.id&&v.type==='Verlof');
+                    const zk=verloven.some(v=>v.medeId===m.id&&v.type==='Ziekte');
+                    return(
+                      <div key={m.id} className="rrow" style={{gridTemplateColumns:'160px repeat(5,1fr)'}}>
+                        <div className="rname">
+                          <div className="av" style={{background:clr.bg,color:clr.fg}}>{ini(m.naam)}</div>
+                          <div>
+                            <div style={{fontSize:12,fontWeight:700,lineHeight:1.2}}>{m.naam.split(' ')[0]}</div>
+                            <span className={`chip ${rol.chip}`} style={{fontSize:10,padding:'1px 5px'}}>{rol.label}</span>
+                          </div>
+                        </div>
+                        {DK.map(dag=>{
+                          const k=`${m.id}-${dag}`;
+                          const ds=shifts[k]||[];
+                          const beschikb=(m.beschikbaar||DK).includes(dag);
+                          return(
+                            <div key={dag} className={`rcell${vl?' vl':zk?' zk':!beschikb?' unavail':''}`}>
+                              {vl&&<span className="abadge" style={{background:'var(--amber-bg)',color:'var(--amber-txt)'}}>Verlof</span>}
+                              {zk&&<span className="abadge" style={{background:'var(--red-bg)',color:'var(--red-txt)'}}>Ziek</span>}
+                              {!vl&&!zk&&!beschikb&&<span className="unavail-dot">Niet beschikbaar</span>}
+                              {!vl&&!zk&&beschikb&&ds.map((s,si)=>{
+                                const t=taken.find(x=>x.id===s.taakId);
+                                if(!t)return null;
+                                return<div key={si} className="stag" style={{background:t.bg,color:t.fg,borderColor:t.fg+'33'}} onClick={()=>remShift(m.id,dag,si)} title={`${t.start}–${t.end} | klik om te verwijderen`}>{t.label.split(' ').slice(0,3).join(' ')}<i className="ti ti-x" style={{fontSize:9}}></i></div>;
+                              })}
+                              {!vl&&!zk&&beschikb&&<div className="addbtn" onClick={()=>setModal({type:'addShiftCell',medeId:m.id,dag})}><i className="ti ti-plus" style={{fontSize:10}}></i>shift</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAKEN ── */}
+          {pagina==='taken'&&(
+            <div className="page">
+              <div className="ph">
+                <div><div className="pt">Taken & shifts</div><div className="ps">Tijdsloten en minimale bezetting</div></div>
+                <button className="btn btn-primary" onClick={()=>setModal({type:'addTaak'})}><i className="ti ti-plus"></i> Taak toevoegen</button>
+              </div>
+              <div className="card">
+                <table>
+                  <thead><tr><th>Naam</th><th>Tijdslot</th><th>Duur</th><th>Actief op</th><th>Min.</th><th></th></tr></thead>
+                  <tbody>
+                    {taken.map(t=>(
+                      <tr key={t.id}>
+                        <td><span style={{display:'inline-block',width:10,height:10,borderRadius:2,background:t.bg,border:`1px solid ${t.fg}`,marginRight:7,verticalAlign:'middle'}}></span><strong>{t.label}</strong></td>
+                        <td style={{fontFamily:'monospace',fontSize:12}}>{t.start} – {t.end}</td>
+                        <td style={{fontSize:12,color:'var(--text2)'}}>{taskDur(t).toFixed(1)}u</td>
+                        <td><div style={{display:'flex',gap:3,flexWrap:'wrap'}}>{t.dagen.map(d=><span key={d} className="chip cgr" style={{fontSize:10}}>{d}</span>)}</div></td>
+                        <td>{t.min===0?<span style={{color:'var(--text3)'}}>—</span>:<span className={`chip ${t.min<=1?'ca':'cb'}`}>{t.min}p.</span>}</td>
+                        <td><button className="btn btn-sm btn-danger" onClick={()=>setTaken(p=>p.filter(x=>x.id!==t.id))}><i className="ti ti-trash"></i></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── WAARSCHUWINGEN ── */}
+          {pagina==='waarschuw'&&(
+            <div className="page">
+              <div className="ph"><div className="pt">Waarschuwingen</div></div>
+              {alerts.length===0
+                ?<div className="alert as"><i className="ti ti-circle-check" style={{fontSize:16}}></i>Alle minimumbezettingen zijn ingevuld.</div>
+                :<div className="card">
+                  <table>
+                    <thead><tr><th>Taak</th><th>Dag</th><th>Ingepland</th><th>Minimum</th><th>Tekort</th></tr></thead>
+                    <tbody>
+                      {alerts.map((a,i)=>(
+                        <tr key={i}>
+                          <td style={{fontWeight:700}}>{a.taak}</td>
+                          <td>{a.dag}</td>
+                          <td>{a.cnt}</td>
+                          <td>{a.min}</td>
+                          <td><span className="chip cr"><i className="ti ti-alert-triangle" style={{fontSize:10}}></i> {a.min-a.cnt} te weinig</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          )}
+
+          {/* ── MEDEWERKERS ── */}
+          {pagina==='medes'&&(
+            <div className="page">
+              <div className="ph">
+                <div><div className="pt">Medewerkers</div><div className="ps">{actief.length} actief</div></div>
+                <button className="btn btn-primary" onClick={()=>setModal({type:'addMede'})}><i className="ti ti-plus"></i> Toevoegen</button>
+              </div>
+              <div className="sg">
+                <div className="sc"><div className="sl">Totaal actief</div><div className="sv">{actief.length}</div></div>
+                <div className="sc"><div className="sl">Hulpverleners</div><div className="sv">{actief.filter(m=>m.rol==='hulpverlener').length}</div></div>
+                <div className="sc"><div className="sl">Deeltijds</div><div className="sv">{actief.filter(m=>m.arbeid.includes('Deeltijds')).length}</div></div>
+                <div className="sc"><div className="sl">Op verlof/ziek</div><div className="sv">{verloven.length}</div></div>
+              </div>
+              <div className="card">
+                <table>
+                  <thead><tr><th>Naam</th><th>Rol</th><th>Arbeidsbreuk</th><th>Beschikbaar</th><th>Status</th><th></th></tr></thead>
+                  <tbody>
+                    {medes.map((m,idx)=>{
+                      const rol=ROLLEN.find(r=>r.id===m.rol);
+                      const clr=avc(idx);
+                      const ov=verloven.some(v=>v.medeId===m.id);
+                      return(
+                        <tr key={m.id}>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:9}}>
+                              <div className="av" style={{background:clr.bg,color:clr.fg,width:32,height:32,fontSize:12}}>{ini(m.naam)}</div>
+                              <div><div style={{fontWeight:700}}>{m.naam}</div><div style={{fontSize:11,color:'var(--text2)'}}>{m.email}</div></div>
+                            </div>
+                          </td>
+                          <td><span className={`chip ${rol.chip}`}>{rol.label}</span></td>
+                          <td style={{fontSize:12}}>{m.arbeid}</td>
+                          <td><div style={{display:'flex',gap:3,flexWrap:'wrap'}}>{(m.beschikbaar||DK).map(d=><span key={d} className="chip cg" style={{fontSize:10}}>{d}</span>)}</div></td>
+                          <td>{ov?<span className="chip ca">Verlof/ziek</span>:<span className="chip cg">Actief</span>}</td>
+                          <td>
+                            <div style={{display:'flex',gap:4}}>
+                              <button className="btn btn-sm" onClick={()=>setModal({type:'editMede',mede:m})}><i className="ti ti-edit"></i></button>
+                              <button className="btn btn-sm btn-danger" onClick={()=>setMedes(p=>p.filter(x=>x.id!==m.id))}><i className="ti ti-trash"></i></button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── BESCHIKBAARHEID ── */}
+          {pagina==='beschikbaar'&&(
+            <div className="page">
+              <div className="ph"><div><div className="pt">Beschikbaarheid</div><div className="ps">Klik op een dag om beschikbaarheid te wijzigen</div></div></div>
+              <div className="card">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Medewerker</th>
+                      {DL.map((d,i)=><th key={d}>{d}<div style={{fontSize:10,fontWeight:400,color:'var(--text3)'}}>{DK[i]}</div></th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {actief.map((m,idx)=>{
+                      const clr=avc(idx);
+                      return(
+                        <tr key={m.id}>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:8}}>
+                              <div className="av" style={{background:clr.bg,color:clr.fg,width:28,height:28,fontSize:11}}>{ini(m.naam)}</div>
+                              <div>
+                                <div style={{fontWeight:600,fontSize:13}}>{m.naam}</div>
+                                <div style={{fontSize:11,color:'var(--text2)'}}>{m.arbeid}</div>
+                              </div>
+                            </div>
+                          </td>
+                          {DK.map(dag=>{
+                            const on=(m.beschikbaar||DK).includes(dag);
+                            return(
+                              <td key={dag} style={{textAlign:'center',cursor:'pointer'}} onClick={()=>{
+                                setMedes(prev=>prev.map(x=>x.id!==m.id?x:{...x,
+                                  beschikbaar:on?(x.beschikbaar||DK).filter(d=>d!==dag):[...(x.beschikbaar||DK),dag]
+                                }));
+                              }}>
+                                {on
+                                  ?<span style={{fontSize:18,color:'var(--green-txt)'}}>✓</span>
+                                  :<span style={{fontSize:18,color:'var(--border2)'}}>–</span>
+                                }
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── UREN OVERZICHT ── */}
+          {pagina==='uren'&&(
+            <div className="page">
+              <div className="ph"><div><div className="pt">Uren overzicht</div><div className="ps">Vergelijk geplande uren met contracturen</div></div></div>
+              <div className="sg">
+                <div className="sc">
+                  <div className="sl">Totaal geplande uren</div>
+                  <div className="sv">{actief.reduce((s,m)=>s+geplandUren(m.id),0).toFixed(1)}u</div>
+                  <div className="ss">deze week</div>
+                </div>
+                <div className="sc">
+                  <div className="sl">Totaal contracturen</div>
+                  <div className="sv">{actief.reduce((s,m)=>s+(m.uren_week||0),0)}u</div>
+                  <div className="ss">per week</div>
+                </div>
+                <div className="sc">
+                  <div className="sl">Medewerkers overschreden</div>
+                  <div className="sv" style={{color:'var(--red-txt)'}}>{actief.filter(m=>geplandUren(m.id)>=(m.uren_week||0)*0.9&&(m.uren_week||0)>0).length}</div>
+                  <div className="ss">bijna/op maximum</div>
+                </div>
+                <div className="sc">
+                  <div className="sl">Medewerkers onderbezet</div>
+                  <div className="sv" style={{color:'var(--amber-txt)'}}>{actief.filter(m=>geplandUren(m.id)<(m.uren_week||0)*0.3&&(m.uren_week||0)>0).length}</div>
+                  <div className="ss">minder dan 30% ingepland</div>
+                </div>
+              </div>
+              <div className="card">
+                <div style={{marginBottom:'1rem'}}>
+                  {actief.map((m,idx)=>{
+                    const clr=avc(idx);
+                    const gepland=geplandUren(m.id);
+                    const contract=m.uren_week||0;
+                    const pct=contract>0?Math.min(120,Math.round(gepland/contract*100)):0;
+                    const barClr=pct>100?'var(--red-txt)':pct>80?'var(--amber-txt)':'var(--blue)';
+                    return(
+                      <div key={m.id} className="prog-row">
+                        <div style={{display:'flex',alignItems:'center',gap:8,minWidth:180}}>
+                          <div className="av" style={{background:clr.bg,color:clr.fg,width:26,height:26,fontSize:10}}>{ini(m.naam)}</div>
+                          <div>
+                            <div style={{fontSize:13,fontWeight:600}}>{m.naam.split(' ')[0]}</div>
+                            <div style={{fontSize:11,color:'var(--text2)'}}>{m.arbeid}</div>
+                          </div>
+                        </div>
+                        <div className="prog-track">
+                          <div className="prog-fill" style={{width:`${pct}%`,background:barClr}}></div>
+                        </div>
+                        <div style={{fontSize:12,minWidth:110,color:'var(--text2)'}}>
+                          <strong style={{color:'var(--text)'}}>{gepland.toFixed(1)}u</strong> / {contract}u contract
+                        </div>
+                        <div className="prog-pct" style={{color:barClr}}>{pct}%</div>
+                        {pct>100&&<span className="chip cr" style={{fontSize:10}}>Overschreden</span>}
+                        {pct>80&&pct<=100&&<span className="chip ca" style={{fontSize:10}}>Bijna vol</span>}
+                        {pct===0&&contract>0&&<span className="chip cgr" style={{fontSize:10}}>Niet ingepland</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{fontSize:12,color:'var(--text3)',paddingTop:'0.75rem',borderTop:'1px solid var(--border)'}}>
+                  Contracturen worden ingesteld bij elke medewerker. De geplande uren zijn berekend op basis van de taken in het rooster deze week.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── VERLOF ── */}
+          {pagina==='verlof'&&(
+            <div className="page">
+              <div className="ph">
+                <div className="pt">Verlof & afwezigheid</div>
+                <button className="btn btn-primary" onClick={()=>setModal({type:'addVerlof'})}><i className="ti ti-plus"></i> Registreren</button>
+              </div>
+              <div className="card">
+                {verloven.length===0
+                  ?<div style={{textAlign:'center',padding:'2rem',color:'var(--text3)'}}>Geen afwezigheden geregistreerd</div>
+                  :<table>
+                    <thead><tr><th>Medewerker</th><th>Type</th><th>Van</th><th>Tot</th><th>Opmerking</th><th></th></tr></thead>
+                    <tbody>
+                      {verloven.map(v=>{
+                        const m=medes.find(x=>x.id===v.medeId);
+                        return(
+                          <tr key={v.id}>
+                            <td style={{fontWeight:600}}>{m?.naam||'–'}</td>
+                            <td><span className={`chip ${v.type==='Verlof'?'ca':v.type==='Ziekte'?'cr':'cgr'}`}>{v.type}</span></td>
+                            <td style={{fontSize:12}}>{v.van}</td>
+                            <td style={{fontSize:12}}>{v.tot}</td>
+                            <td style={{fontSize:12,color:'var(--text2)'}}>{v.opmerking||'—'}</td>
+                            <td><button className="btn btn-sm btn-danger" onClick={()=>setVerloven(p=>p.filter(x=>x.id!==v.id))}><i className="ti ti-trash"></i></button></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                }
+              </div>
+            </div>
+          )}
+
+          {/* ── LOCATIES ── */}
+          {pagina==='locaties'&&(
+            <div className="page">
+              <div className="ph"><div><div className="pt">Locaties</div><div className="ps">Klaar voor uitbreiding</div></div></div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
+                <div className="card" style={{borderColor:'var(--blue-bd)',borderWidth:2}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                    <div style={{fontWeight:700}}>Antwerpen</div>
+                    <span className="chip cb" style={{fontSize:10}}>Actief</span>
+                  </div>
+                  <div style={{fontSize:12,color:'var(--text2)',marginBottom:8}}>Korte Nieuwstraat 26</div>
+                  <div style={{fontSize:12,color:'var(--text2)'}}>{actief.length} medewerkers</div>
+                </div>
+                {['Boom','Brasschaat','Kalmthout','Mortsel','Stabroek','Zoersel'].map(loc=>(
+                  <div key={loc} className="card" style={{opacity:.6}}>
+                    <div style={{fontWeight:700,marginBottom:4}}>{loc}</div>
+                    <span className="chip cgr" style={{fontSize:10}}>Niet actief</span>
+                    <div style={{marginTop:10}}><button className="btn btn-sm" style={{width:'100%',justifyContent:'center'}}>Activeren</button></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+      {modal&&<Modal modal={modal} setModal={setModal} medes={medes} setMedes={setMedes} taken={taken} setTaken={setTaken} verloven={verloven} setVerloven={setVerloven} addShift={addShift}/>}
+    </div>
+  );
+}
+
+function Modal({modal,setModal,medes,setMedes,taken,setTaken,verloven,setVerloven,addShift}){
+  const today=new Date().toISOString().slice(0,10);
+  const editM=modal.mede||null;
+  const [f,setF]=useState({
+    naam:editM?.naam||'',rol:editM?.rol||'hulpverlener',arbeid:editM?.arbeid||'Voltijds (100%)',email:editM?.email||'',uren:editM?.uren_week||38,
+    beschikbaar:editM?.beschikbaar||[...DK],
+    medeId:medes[0]?.id||'',type:'Verlof',van:today,tot:today,opmerking:'',
+    dag:'ma',taakId:taken[0]?.id||'',
+    tlabel:'',tstart:'09:00',tend:'17:00',tdagen:['ma'],tmin:'1',tbg:'#dbeafe',tfg:'#1e40af',
+  });
+  const upd=e=>setF(p=>({...p,[e.target.name]:e.target.value}));
+  const togBeschikbaar=d=>setF(p=>({...p,beschikbaar:p.beschikbaar.includes(d)?p.beschikbaar.filter(x=>x!==d):[...p.beschikbaar,d]}));
+  const togDag=d=>setF(p=>({...p,tdagen:p.tdagen.includes(d)?p.tdagen.filter(x=>x!==d):[...p.tdagen,d]}));
+
+  function submit(){
+    if(modal.type==='addMede'){
+      if(!f.naam.trim())return;
+      setMedes(p=>[...p,{id:Date.now(),naam:f.naam,rol:f.rol,arbeid:f.arbeid,email:f.email,actief:true,beschikbaar:f.beschikbaar,uren_week:parseInt(f.uren)||0}]);
+    } else if(modal.type==='editMede'){
+      setMedes(p=>p.map(m=>m.id===editM.id?{...m,naam:f.naam,rol:f.rol,arbeid:f.arbeid,email:f.email,beschikbaar:f.beschikbaar,uren_week:parseInt(f.uren)||0}:m));
+    } else if(modal.type==='addVerlof'){
+      setVerloven(p=>[...p,{id:Date.now(),medeId:parseInt(f.medeId),type:f.type,van:f.van,tot:f.tot,opmerking:f.opmerking}]);
+    } else if(modal.type==='addShift'||modal.type==='addShiftCell'){
+      addShift(modal.medeId||parseInt(f.medeId),modal.dag||f.dag,f.taakId);
+    } else if(modal.type==='addTaak'){
+      if(!f.tlabel.trim()||f.tdagen.length===0)return;
+      setTaken(p=>[...p,{id:'t'+Date.now(),label:f.tlabel,start:f.tstart,end:f.tend,dagen:f.tdagen,min:parseInt(f.tmin)||0,bg:f.tbg,fg:f.tfg}]);
+    }
+    setModal(null);
+  }
+
+  const isEdit=modal.type==='editMede';
+  const isMede=modal.type==='addMede'||isEdit;
+
+  return(
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&setModal(null)}>
+      <div className="modal">
+        {isMede&&<>
+          <div className="mt">{isEdit?'Medewerker bewerken':'Medewerker toevoegen'}</div>
+          <div className="fg"><label className="fl">Naam</label><input className="fc" name="naam" value={f.naam} onChange={upd} placeholder="Voornaam Achternaam" autoFocus/></div>
+          <div className="fr">
+            <div className="fg"><label className="fl">Rol</label><select className="fc" name="rol" value={f.rol} onChange={upd}>{ROLLEN.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></div>
+            <div className="fg"><label className="fl">Arbeidsbreuk</label><select className="fc" name="arbeid" value={f.arbeid} onChange={upd}>{ARBEIDSBREUKEN.map(a=><option key={a}>{a}</option>)}</select></div>
+          </div>
+          <div className="fr">
+            <div className="fg"><label className="fl">E-mail</label><input className="fc" name="email" value={f.email} onChange={upd} placeholder="naam@jac.be" type="email"/></div>
+            <div className="fg"><label className="fl">Contracturen/week</label><input className="fc" name="uren" value={f.uren} onChange={upd} type="number" min="0" max="40"/></div>
+          </div>
+          <div className="fg">
+            <label className="fl">Beschikbaar op</label>
+            <div style={{display:'flex',gap:6,marginTop:4}}>
+              {DK.map((d,i)=>(
+                <button key={d} type="button" className={`btn btn-sm${f.beschikbaar.includes(d)?' btn-primary':''}`} onClick={()=>togBeschikbaar(d)} title={DL[i]}>{d}</button>
+              ))}
+            </div>
+          </div>
+        </>}
+
+        {modal.type==='addVerlof'&&<>
+          <div className="mt">Afwezigheid registreren</div>
+          <div className="fg"><label className="fl">Medewerker</label><select className="fc" name="medeId" value={f.medeId} onChange={upd}>{medes.filter(m=>m.actief).map(m=><option key={m.id} value={m.id}>{m.naam}</option>)}</select></div>
+          <div className="fr">
+            <div className="fg"><label className="fl">Type</label><select className="fc" name="type" value={f.type} onChange={upd}>{VERLOF_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+            <div></div>
+          </div>
+          <div className="fr">
+            <div className="fg"><label className="fl">Van</label><input className="fc" type="date" name="van" value={f.van} onChange={upd}/></div>
+            <div className="fg"><label className="fl">Tot</label><input className="fc" type="date" name="tot" value={f.tot} onChange={upd}/></div>
+          </div>
+          <div className="fg"><label className="fl">Opmerking</label><textarea className="fc" name="opmerking" value={f.opmerking} onChange={upd} rows={2} placeholder="Optioneel..."/></div>
+        </>}
+
+        {(modal.type==='addShift'||modal.type==='addShiftCell')&&<>
+          <div className="mt">Shift toevoegen</div>
+          {!modal.medeId&&<div className="fg"><label className="fl">Medewerker</label><select className="fc" name="medeId" value={f.medeId} onChange={upd}>{medes.filter(m=>m.actief).map(m=><option key={m.id} value={m.id}>{m.naam}</option>)}</select></div>}
+          {!modal.dag&&<div className="fg"><label className="fl">Dag</label><select className="fc" name="dag" value={f.dag} onChange={upd}>{DK.map((d,i)=><option key={d} value={d}>{DL[i]}</option>)}</select></div>}
+          <div className="fg"><label className="fl">Taak</label><select className="fc" name="taakId" value={f.taakId} onChange={upd}>{taken.map(t=><option key={t.id} value={t.id}>{t.label} ({t.start}–{t.end})</option>)}</select></div>
+        </>}
+
+        {modal.type==='addTaak'&&<>
+          <div className="mt">Nieuwe taak aanmaken</div>
+          <div className="fg"><label className="fl">Naam</label><input className="fc" name="tlabel" value={f.tlabel} onChange={upd} placeholder="Bv. Groepsactiviteit" autoFocus/></div>
+          <div className="fr">
+            <div className="fg"><label className="fl">Starttijd</label><input className="fc" type="time" name="tstart" value={f.tstart} onChange={upd}/></div>
+            <div className="fg"><label className="fl">Eindtijd</label><input className="fc" type="time" name="tend" value={f.tend} onChange={upd}/></div>
+          </div>
+          <div className="fg">
+            <label className="fl">Actief op</label>
+            <div style={{display:'flex',gap:6,marginTop:4}}>
+              {DK.map((d,i)=><button key={d} type="button" className={`btn btn-sm${f.tdagen.includes(d)?' btn-primary':''}`} onClick={()=>togDag(d)} title={DL[i]}>{d}</button>)}
+            </div>
+          </div>
+          <div className="fr">
+            <div className="fg"><label className="fl">Min. personen</label><input className="fc" type="number" name="tmin" value={f.tmin} onChange={upd} min="0" max="20"/></div>
+            <div className="fg">
+              <label className="fl">Kleur</label>
+              <div style={{display:'flex',gap:6,marginTop:6}}>
+                {[['#dbeafe','#1e40af'],['#dcfce7','#166534'],['#fef3c7','#92400e'],['#fce7f3','#9d174d'],['#ede9fe','#5b21b6'],['#fee2e2','#991b1b']].map(([bg,fg])=>(
+                  <div key={bg} onClick={()=>setF(p=>({...p,tbg:bg,tfg:fg}))} style={{width:24,height:24,borderRadius:4,background:bg,border:`2px solid ${f.tbg===bg?fg:'transparent'}`,cursor:'pointer'}}></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>}
+
+        <div className="mf">
+          <button className="btn" onClick={()=>setModal(null)}>Annuleren</button>
+          <button className="btn btn-primary" onClick={submit}><i className="ti ti-check"></i> Opslaan</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
